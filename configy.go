@@ -100,7 +100,6 @@ func SetValue(out reflect.Value, envv string) error {
 			out.SetFloat(f)
 		}
 	case reflect.Array:
-		log.Println(out.Type().Len())
 		return (errors.New(out.Type().String() + " needs to be slice"))
 	case reflect.Slice:
 		switch out.Type().Elem().Kind() {
