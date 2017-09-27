@@ -20,28 +20,27 @@ import (
 )
 
 type Configuration struct {
-	String string `yaml:"string" envv:"STRING"`
+	String string `yaml:"string" env:"STRING"`
 	Struct struct {
-		Int  int  `yaml:"int" envv:"INT"`
-		Bool bool `yaml:"bool" envv:"BOOL"`
+		Int  int  `yaml:"int" env:"INT"`
+		Bool bool `yaml:"bool" env:"BOOL"`
 	}
-	Float32    float32   `yaml:"float32" envv:"FLOAT32"`
-	Float64    float64   `yaml:"float64" envv:"FLOAT64"`
-	SliceStr   []string  `yaml:"slice_str" envv:"SLICE_STR"`
-	SliceInt   []int     `yaml:"slice_int" envv:"SLICE_INT"`
-	SliceBool  []bool    `yaml:"slice_bool" envv:"SLICE_BOOL"`
-	SliceFloat []float64 `yaml:"slice_float" envv:"SLICE_FLOAT"`
+	Float32    float32   `yaml:"float32" env:"FLOAT32"`
+	Float64    float64   `yaml:"float64" env:"FLOAT64"`
+	SliceStr   []string  `yaml:"slice_str" env:"SLICE_STR"`
+	SliceInt   []int     `yaml:"slice_int" env:"SLICE_INT"`
+	SliceBool  []bool    `yaml:"slice_bool" env:"SLICE_BOOL"`
+	SliceFloat []float64 `yaml:"slice_float" env:"SLICE_FLOAT"`
 }
 
 func main() {
 	_config := Configuration{}
-	//default yaml file name = "config.yml"
-	configy.Load(&_config, "")
+	configy.Load(&_config, "./config.yml")
 	fmt.Println(_config)
-	
-	//set custom yaml file name
-	configy.SetFileName("config1.yml")
-	configy.Load(&_config, "C:/")
+
+	_config = Configuration{}
+	//use os enviroment variables
+	configy.Load(&_config, "")
 	fmt.Println(_config)
 }
 ```

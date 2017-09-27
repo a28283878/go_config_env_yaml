@@ -14,13 +14,8 @@ import (
 )
 
 var (
-	useYaml  bool
-	yamlName string
+	useYaml bool
 )
-
-func init() {
-	yamlName = "config.yml"
-}
 
 //Load : load date from yaml or os
 func Load(out interface{}, file_path string) {
@@ -33,7 +28,6 @@ func Load(out interface{}, file_path string) {
 	useYaml = true
 	file, err := readFile(file_path)
 	if err != nil {
-		log.Printf("cannot find the file \"%s\", use os environment variable instead", yamlName)
 		useYaml = false
 	}
 
@@ -42,11 +36,6 @@ func Load(out interface{}, file_path string) {
 	} else {
 		loadEnv(reflect.ValueOf(out).Elem())
 	}
-}
-
-//SetFileName : set custom yaml name
-func SetFileName(newFileName string) {
-	yamlName = newFileName
 }
 
 func loadYaml(file []byte, out interface{}) {
@@ -164,8 +153,10 @@ func readFile(file_path string) ([]byte, error) {
 		log.Fatalf("file error: %v", err)
 	}
 
-	configPath := filepath.Join(rootDirPath, yamlName)
+	configPath := filepath.Join(rootDirPath, file_path)
 	file, err := ioutil.ReadFile(configPath)
-
-	return file, err
+	if err != nil {
+		return file, err
+	}
+	return file, nil
 }
