@@ -52,7 +52,7 @@ func SetFileName(newFileName string) {
 func loadYaml(file []byte, out interface{}) {
 	err := yaml.Unmarshal(file, out)
 	if err != nil {
-		log.Fatalf("config error: %v", err)
+		log.Fatalf(err.Error())
 	}
 }
 
@@ -62,7 +62,7 @@ func loadEnv(out reflect.Value) {
 		case reflect.Struct:
 			loadEnv(out.Field(i))
 		default:
-			err := setValue(out.Field(i), os.Getenv(out.Type().Field(i).Tag.Get("envv")))
+			err := setValue(out.Field(i), os.Getenv(out.Type().Field(i).Tag.Get("env")))
 			if err != nil {
 				log.Fatalf(err.Error())
 			}
@@ -70,15 +70,15 @@ func loadEnv(out reflect.Value) {
 	}
 }
 
-func setValue(out reflect.Value, envv string) error {
-	if len(envv) == 0 {
+func setValue(out reflect.Value, env string) error {
+	if len(env) == 0 {
 		return nil
 	}
 	switch out.Kind() {
 	case reflect.String:
-		out.SetString(envv)
+		out.SetString(env)
 	case reflect.Int:
-		num, err := strconv.Atoi(envv)
+		num, err := strconv.Atoi(env)
 		if err != nil {
 			return err
 		}
@@ -87,13 +87,13 @@ func setValue(out reflect.Value, envv string) error {
 			out.SetInt(i)
 		}
 	case reflect.Bool:
-		b, err := strconv.ParseBool(envv)
+		b, err := strconv.ParseBool(env)
 		if err != nil {
 			return err
 		}
 		out.SetBool(b)
 	case reflect.Float32:
-		f, err := strconv.ParseFloat(envv, 32)
+		f, err := strconv.ParseFloat(env, 32)
 		if err != nil {
 			return err
 		}
@@ -101,7 +101,7 @@ func setValue(out reflect.Value, envv string) error {
 			out.SetFloat(f)
 		}
 	case reflect.Float64:
-		f, err := strconv.ParseFloat(envv, 64)
+		f, err := strconv.ParseFloat(env, 64)
 		if err != nil {
 			return err
 		}
@@ -114,35 +114,35 @@ func setValue(out reflect.Value, envv string) error {
 		switch out.Type().Elem().Kind() {
 		case reflect.Int:
 			var ints []int
-			err := json.Unmarshal([]byte(envv), &ints)
+			err := json.Unmarshal([]byte(env), &ints)
 			if err != nil {
 				return err
 			}
 			out.Set(reflect.ValueOf(ints))
 		case reflect.String:
 			var strings []string
-			err := json.Unmarshal([]byte(envv), &strings)
+			err := json.Unmarshal([]byte(env), &strings)
 			if err != nil {
 				return err
 			}
 			out.Set(reflect.ValueOf(strings))
 		case reflect.Bool:
 			var bools []bool
-			err := json.Unmarshal([]byte(envv), &bools)
+			err := json.Unmarshal([]byte(env), &bools)
 			if err != nil {
 				return err
 			}
 			out.Set(reflect.ValueOf(bools))
 		case reflect.Float32:
 			var floats []float32
-			err := json.Unmarshal([]byte(envv), &floats)
+			err := json.Unmarshal([]byte(env), &floats)
 			if err != nil {
 				return err
 			}
 			out.Set(reflect.ValueOf(floats))
 		case reflect.Float64:
 			var floats []float64
-			err := json.Unmarshal([]byte(envv), &floats)
+			err := json.Unmarshal([]byte(env), &floats)
 			if err != nil {
 				return err
 			}
