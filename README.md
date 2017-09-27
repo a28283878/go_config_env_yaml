@@ -35,6 +35,7 @@ type Configuration struct {
 
 func main() {
 	_config := Configuration{}
+	//default yaml file name = "config.yml"
 	configy.Load(&_config, "")
 	fmt.Println(_config)
 	
