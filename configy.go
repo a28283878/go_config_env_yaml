@@ -74,6 +74,9 @@ func loadEnv(out reflect.Value) error {
 }
 
 func setValue(out reflect.Value, envv string) error {
+	if len(envv) == 0 {
+		return nil
+	}
 	switch out.Kind() {
 	case reflect.String:
 		out.SetString(envv)
