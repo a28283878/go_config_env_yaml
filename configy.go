@@ -13,12 +13,17 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-var use_yaml bool
+var (
+	useYaml  bool
+	yamlName string
+)
 
 func init() {
-	use_yaml = true
+	useYaml = true
+	yamlName = "config.yml"
 }
 
+//Load : load date from yaml or os
 func Load(out interface{}, file_path string) {
 	var err error
 	v := reflect.ValueOf(out)
@@ -28,16 +33,20 @@ func Load(out interface{}, file_path string) {
 
 	file, err := readFile(file_path)
 	if err != nil {
-		log.Printf("cannot find the file, use os environment Variable")
-		use_yaml = false
+		log.Printf("cannot find the file \"%s\", use os environment variable instead", yamlName)
+		useYaml = false
 	}
 
-	if use_yaml {
+	if useYaml {
 		loadYaml(file, out)
 	} else {
 		loadEnv(reflect.ValueOf(out).Elem())
 	}
+}
 
+//SetFileName : set custom yaml name
+func SetFileName(newFileName string) {
+	yamlName = newFileName
 }
 
 func loadYaml(file []byte, out interface{}) error {
@@ -55,7 +64,7 @@ func loadEnv(out reflect.Value) error {
 		case reflect.Struct:
 			loadEnv(out.Field(i))
 		default:
-			err := SetValue(out.Field(i), os.Getenv(out.Type().Field(i).Tag.Get("envv")))
+			err := setValue(out.Field(i), os.Getenv(out.Type().Field(i).Tag.Get("envv")))
 			if err != nil {
 				panic(err)
 			}
@@ -64,7 +73,7 @@ func loadEnv(out reflect.Value) error {
 	return nil
 }
 
-func SetValue(out reflect.Value, envv string) error {
+func setValue(out reflect.Value, envv string) error {
 	switch out.Kind() {
 	case reflect.String:
 		out.SetString(envv)
@@ -111,7 +120,7 @@ func SetValue(out reflect.Value, envv string) error {
 			}
 			out.Set(reflect.ValueOf(ints))
 		case reflect.String:
-			var strings []int
+			var strings []string
 			err := json.Unmarshal([]byte(envv), &strings)
 			if err != nil {
 				return err
@@ -155,7 +164,7 @@ func readFile(file_path string) ([]byte, error) {
 		log.Fatalf("file error: %v", err)
 	}
 
-	configPath := filepath.Join(rootDirPath, "config.yml")
+	configPath := filepath.Join(rootDirPath, yamlName)
 	file, err := ioutil.ReadFile(configPath)
 
 	return file, err
