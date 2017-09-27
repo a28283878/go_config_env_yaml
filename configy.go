@@ -137,11 +137,11 @@ func setValue(out reflect.Value, env string) error {
 			}
 			out.Set(reflect.ValueOf(floats))
 		default:
-			return (errors.New("undefine type"))
+			return (errors.New("undefined type"))
 		}
 
 	default:
-		return (errors.New("undefine type"))
+		return (errors.New("undefined type"))
 	}
 
 	return nil
