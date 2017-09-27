@@ -27,7 +27,7 @@ func Load(out interface{}, file_path string) {
 	var err error
 	v := reflect.ValueOf(out)
 	if v.Kind() != reflect.Ptr || v.IsNil() {
-		panic("Input struct is null or not pointer")
+		log.Fatalf("Input struct is null or not pointer")
 	}
 
 	useYaml = true
@@ -49,16 +49,14 @@ func SetFileName(newFileName string) {
 	yamlName = newFileName
 }
 
-func loadYaml(file []byte, out interface{}) error {
+func loadYaml(file []byte, out interface{}) {
 	err := yaml.Unmarshal(file, out)
 	if err != nil {
 		log.Fatalf("config error: %v", err)
-		return err
 	}
-	return nil
 }
 
-func loadEnv(out reflect.Value) error {
+func loadEnv(out reflect.Value) {
 	for i := 0; i < out.NumField(); i++ {
 		switch out.Field(i).Kind() {
 		case reflect.Struct:
@@ -66,11 +64,10 @@ func loadEnv(out reflect.Value) error {
 		default:
 			err := setValue(out.Field(i), os.Getenv(out.Type().Field(i).Tag.Get("envv")))
 			if err != nil {
-				panic(err)
+				log.Fatalf(err.Error())
 			}
 		}
 	}
-	return nil
 }
 
 func setValue(out reflect.Value, envv string) error {
