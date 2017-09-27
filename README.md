@@ -41,7 +41,7 @@ func main() {
 	
 	//set custom yaml file name
 	configy.SetFileName("config1.yml")
-	configy.Load(&_config, "")
+	configy.Load(&_config, "C:/")
 	fmt.Println(_config)
 }
 ```
