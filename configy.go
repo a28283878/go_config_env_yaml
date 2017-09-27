@@ -155,7 +155,7 @@ func readFile(file_path string) ([]byte, error) {
 		log.Fatalf("file error: %v", err)
 	}
 
-	configPath := filepath.Join(rootDirPath, "config1.yml")
+	configPath := filepath.Join(rootDirPath, "config.yml")
 	file, err := ioutil.ReadFile(configPath)
 
 	return file, err
