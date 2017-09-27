@@ -7,7 +7,7 @@ It is a go library for mapping data from yaml or enviroment variable.
 * bool
 * float32
 * float64
-* slice(with all type above)
+* slice(with all types above)
 
 ## Example
 ```go
