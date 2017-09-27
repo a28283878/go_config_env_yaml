@@ -19,7 +19,6 @@ var (
 )
 
 func init() {
-	useYaml = true
 	yamlName = "config.yml"
 }
 
@@ -31,6 +30,7 @@ func Load(out interface{}, file_path string) {
 		panic("Input struct is null or not pointer")
 	}
 
+	useYaml = true
 	file, err := readFile(file_path)
 	if err != nil {
 		log.Printf("cannot find the file \"%s\", use os environment variable instead", yamlName)
