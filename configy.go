@@ -133,8 +133,9 @@ func getTokens(env string) []string {
 		if inBrace {
 			if string(char) == "\"" {
 				inString = !inString
+			} else {
+				token = token + string(char)
 			}
-			token = token + string(char)
 			if string(char) == "}" && !inString {
 				inBrace = false
 			}
@@ -236,8 +237,6 @@ func setValue(out reflect.Value, env string) error {
 		default:
 			return fmt.Errorf("undefined type")
 		}
-	case reflect.Struct:
-
 	default:
 		return fmt.Errorf("undefined type")
 	}
