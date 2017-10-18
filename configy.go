@@ -3,12 +3,14 @@ package configy
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strconv"
+	"strings"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -48,15 +50,110 @@ func loadYaml(file []byte, out interface{}) {
 func loadEnv(out reflect.Value) {
 	for i := 0; i < out.NumField(); i++ {
 		switch out.Field(i).Kind() {
+
+		case reflect.Slice:
+			if out.Field(i).Type().Elem().Kind() == reflect.Struct {
+				err := readSlice(out.Field(i), out.Type().Field(i))
+				if err != nil {
+					log.Fatalf(err.Error())
+				}
+			} else {
+				err := setValue(out.Field(i), getEnvValue(out.Type().Field(i)))
+				if err != nil {
+					log.Fatalf(err.Error())
+				}
+			}
 		case reflect.Struct:
 			loadEnv(out.Field(i))
 		default:
-			err := setValue(out.Field(i), os.Getenv(out.Type().Field(i).Tag.Get("env")))
+			err := setValue(out.Field(i), getEnvValue(out.Type().Field(i)))
 			if err != nil {
 				log.Fatalf(err.Error())
 			}
 		}
 	}
+}
+
+func readSlice(out reflect.Value, outField reflect.StructField) error {
+	env := os.Getenv(outField.Tag.Get("env"))
+	tokens := getTokens(env)
+	elType := out.Type().Elem()
+	slice := reflect.MakeSlice(out.Type(), out.Len(), out.Cap())
+
+	if len(tokens) >= 1 {
+		for _, ele := range tokens {
+			el := reflect.New(elType).Elem()
+			ele = strings.TrimLeft(ele, "{")
+			ele = strings.TrimRight(ele, "}")
+			vals := strings.Split(ele, ",")
+			for index, val := range vals {
+				if index >= el.NumField() {
+					return fmt.Errorf("too many arguments. in {%s}", ele)
+				}
+				if err := setValue(el.Field(index), val); err != nil {
+					return err
+				}
+			}
+			slice = reflect.Append(slice, el)
+		}
+	}
+
+	out.Set(slice)
+	return nil
+}
+
+func getEnvValue(field reflect.StructField) string {
+	var tag string
+	var env string
+
+	tag = field.Tag.Get("env")
+	if len(tag) == 0 {
+		tag = field.Name
+	}
+
+	method := strings.Split(tag, ":")
+
+	if len(method) > 1 {
+		if strings.TrimSpace(method[0]) == "default" {
+			return method[1]
+		}
+	}
+
+	env = os.Getenv(tag)
+	return env
+}
+
+func getTokens(env string) []string {
+	var result []string
+	inBrace := false
+	inString := false
+	var token string
+
+	for _, char := range env {
+		if inBrace {
+			if string(char) == "\"" {
+				inString = !inString
+			}
+			token = token + string(char)
+			if string(char) == "}" && !inString {
+				inBrace = false
+			}
+		} else {
+			if string(char) == "{" && !inString {
+				inBrace = true
+				if len(token) > 0 {
+					result = append(result, token)
+				}
+				token = "{"
+			}
+		}
+	}
+
+	if len(token) > 0 {
+		result = append(result, token)
+	}
+
+	return result
 }
 
 func setValue(out reflect.Value, env string) error {
@@ -137,11 +234,12 @@ func setValue(out reflect.Value, env string) error {
 			}
 			out.Set(reflect.ValueOf(floats))
 		default:
-			return (errors.New("undefined type"))
+			return fmt.Errorf("undefined type")
 		}
+	case reflect.Struct:
 
 	default:
-		return (errors.New("undefined type"))
+		return fmt.Errorf("undefined type")
 	}
 
 	return nil
