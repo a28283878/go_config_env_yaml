@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
@@ -30,6 +29,7 @@ func Load(out interface{}, file_path string) {
 	useYaml = true
 	file, err := readFile(file_path)
 	if err != nil {
+		log.Printf("can't load yaml, load env instead. %s", err.Error())
 		useYaml = false
 	}
 
@@ -246,13 +246,7 @@ func setValue(out reflect.Value, env string) error {
 }
 
 func readFile(file_path string) ([]byte, error) {
-	rootDirPath, err := filepath.Abs(filepath.Dir(file_path))
-	if err != nil {
-		log.Fatalf("file error: %v", err)
-	}
-
-	configPath := filepath.Join(rootDirPath, file_path)
-	file, err := ioutil.ReadFile(configPath)
+	file, err := ioutil.ReadFile(file_path)
 	if err != nil {
 		return file, err
 	}
